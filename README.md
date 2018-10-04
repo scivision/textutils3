@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.com/scivision/recursivespellcheck.svg?branch=master)](https://travis-ci.com/scivision/recursivespellcheck)
-[![PyPi version](https://img.shields.io/pypi/pyversions/lowtran.svg)](https://pypi.python.org/pypi/recursivespellcheck)
-[![PyPi Download stats](http://pepy.tech/badge/recursivespellcheck)](http://pepy.tech/project/recursivespellcheck)
+[![Build Status](https://travis-ci.com/scivision/textutils.svg?branch=master)](https://travis-ci.com/scivision/textutils)
+[![PyPi version](https://img.shields.io/pypi/pyversions/textutils3.svg)](https://pypi.python.org/pypi/textutils3)
+[![PyPi Download stats](http://pepy.tech/badge/textutils3)](http://pepy.tech/project/textutils3)
 
 
 # Recursive Spellcheck
@@ -16,7 +16,7 @@ Optional grammar highlighting via `diction` is also provided.
    * [Windows](http://aspell.net/win32/)
 2. Install Python script
    ```sh
-   pip install recursivespellcheck
+   pip install textutils3
    ```
 3. usage: from Terminal:
    ```sh

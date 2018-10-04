@@ -2,16 +2,22 @@
 """
 Ctrl \  to abort
 """
-from subprocess import check_call
+import subprocess
 from pathlib import Path
 from typing import Sequence, Union, Generator
 from argparse import ArgumentParser
 
 MAXSIZE = 20e6  # [bytes]
 
+try:
+    subprocess.check_call(['diction', '-h'], stdout=subprocess.DEVNULL)
+    USEDICTION = True
+except Exception:
+    USEDICTION = False
+
 
 def findtext(root: Path, globext: Sequence[str], exclude: Sequence[str],
-             verbose: bool = False):
+             checkgrammar: bool = USEDICTION):
     """finds file to spell check"""
     if isinstance(globext, (Path, str)):
         globext = [globext]
@@ -20,22 +26,23 @@ def findtext(root: Path, globext: Sequence[str], exclude: Sequence[str],
         # in case "ext" is actually a specific filename
         ext = Path(e).expanduser()
         if ext.is_file():
-            spellchk(ext)
+            spellchk(ext, checkgrammar=checkgrammar)
         else:  # usual case
-            spellchklist(Path(root).expanduser().rglob(str(ext)), exclude, verbose)
+            spellchklist(Path(root).expanduser().rglob(str(ext)), exclude,
+                         checkgrammar)
 
 
 def spellchklist(flist: Union[Generator[Path, None, None], Sequence[Path]],
-                 exclude: Sequence[str], verbose: bool = False):
+                 exclude: Sequence[str],
+                 checkgrammar: bool = USEDICTION):
     """Spell check each file"""
-    if verbose:
-        print(f'spell checking {flist}')
 
     for f in flist:
-        spellchk(f, exclude)
+        spellchk(f, exclude, checkgrammar)
 
 
-def spellchk(f: Path, exclude: Sequence[str] = None):
+def spellchk(f: Path, exclude: Sequence[str] = None,
+             checkgrammar: bool = USEDICTION):
 
     if exclude is not None:
         for ex in exclude:
@@ -43,9 +50,15 @@ def spellchk(f: Path, exclude: Sequence[str] = None):
                 return
 
     try:
-        check_call(['aspell', 'check', str(f)])
+        subprocess.check_call(['aspell', 'check', str(f)])
     except Exception as e:  # catch-all for unexpected error
         print(f, e)
+
+    if checkgrammar:
+        try:
+            subprocess.check_call(['diction', str(f)])
+        except Exception as e:  # catch-all for unexpected error
+            print(f, e)
 
 
 def main():
@@ -55,11 +68,11 @@ def main():
                    default=['*.rst', '*.txt', '*.md', '*.tex'])
     p.add_argument('--exclude', help='directories to exclude', nargs='+',
                    default=['.egg-info'])
-    p.add_argument('-v', '--verbose', action='store_true')
+    p.add_argument('--nogrammar', action='store_false')
     P = p.parse_args()
 
     try:
-        findtext(P.rdir, P.glob, P.exclude, P.verbose)
+        findtext(P.rdir, P.glob, P.exclude, P.nogrammar)
     except KeyboardInterrupt:
         pass
 

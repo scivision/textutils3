@@ -7,7 +7,7 @@ Michael Hirsch, Ph.D.
 import logging
 import subprocess
 from pathlib import Path
-from typing import Union, List, Generator
+from typing import List
 from argparse import ArgumentParser
 import shutil
 try:
@@ -22,13 +22,15 @@ def scanbadchar(path: Path, pat: str):
     ext: file extension INCLUDING PERIOD
     """
     path = Path(path).expanduser()
-    flist: Union[Generator[Path, None, None], List[Path]]
+    flist: List[Path]
     if path.is_file():
         flist = [path]
     elif path.is_dir():
-        flist = path.glob(pat)
+        flist = list(path.glob(pat))
     else:
         raise FileNotFoundError(f'{path} not found')
+
+    print(f'Scanning {len(flist)} files in {flist[0].parent}')
 
     for fn in flist:
         if fn.is_dir():

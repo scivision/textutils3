@@ -33,7 +33,7 @@ def main():
             print('skipping non-existent', newfn)
             continue
 
-        print('comparing',fn)
+        print('comparing', fn)
 
         ret = subprocess.check_output(['latexdiff', str(fn), str(newfn)], universal_newlines=True)
 

@@ -5,59 +5,56 @@ useful for f2py, BibTeX and more.
 Michael Hirsch, Ph.D.
 """
 import logging
-import subprocess
 from pathlib import Path
-from typing import List
 from argparse import ArgumentParser
 import shutil
-try:
-    subprocess.check_call(['iconv', '--version'], stdout=subprocess.DEVNULL)
-    FIX = True
-except Exception as e:
-    FIX = False
+from typing import Union, List, Iterator
 
 
-def scanbadchar(path: Path, pat: str):
+def scanbadchar(path: Path, pat: str,
+                dofix: bool = False):
     """
-    ext: file extension INCLUDING PERIOD
+    path : pathlib.Path
+        directory to look under
+    pat : str
+        filename globbing pattern
+    dofix : bool, optional
+        rewrite file with bad characters omitted, saving original to filename.bak
     """
     path = Path(path).expanduser()
-    flist: List[Path]
+    flist: Union[Iterator[Path], List[Path]]
     if path.is_file():
         flist = [path]
     elif path.is_dir():
-        flist = list(path.glob(pat))
+        if not pat:
+            raise ValueError('must specify -e filename glob pattern when specifying a directory')
+        flist = path.glob(pat)
     else:
         raise FileNotFoundError(f'{path} not found')
-
-    print(f'Scanning {len(flist)} files in {flist[0].parent}')
 
     for fn in flist:
         if fn.is_dir():
             continue
 
-        try:
-            fn.read_text()
-        except UnicodeDecodeError:
+        finf = fn.stat()
+        txt = fn.read_text(errors='ignore')
+        if len(txt) != finf.st_size:  # bad characters were silently dropped
             logging.warning(f'BAD character in {fn}')
-            if FIX:
+            if dofix:
                 print(f'fixing {fn}')
-
                 shutil.copy2(fn, fn.with_suffix('.bak'))
-                # this returns stderr 1 if characters were bad despite conversion success.
-                ret = subprocess.check_output(['iconv', '-c', '-f', 'utf-8', '-t', 'ascii', str(fn)],
-                                              timeout=5, universal_newlines=True)
 
-                fn.write_text(ret)
+                fn.write_text(txt)
 
 
 def main():
     p = ArgumentParser()
     p.add_argument('path', help='top path to search')
-    p.add_argument('ext', help='file glob pattern', nargs='?', default='*')
+    p.add_argument('-e', '--ext', help='file glob pattern')
+    p.add_argument('-f', '--fix', help='fix bad files', action='store_true')
     P = p.parse_args()
 
-    scanbadchar(P.path, P.ext)
+    scanbadchar(P.path, P.ext, P.fix)
 
 
 if __name__ == '__main__':

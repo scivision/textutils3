@@ -1,64 +1,49 @@
 #!/usr/bin/env python
 """
-Ctrl \  to abort
+Recursive spell check using "aspell"
 """
+import shutil
 import subprocess
 from pathlib import Path
-from typing import Sequence, Union, Generator
+from typing import Sequence
 from argparse import ArgumentParser
 
 MAXSIZE = 20e6  # [bytes]
 
-try:
-    subprocess.check_call(['diction', '-h'], stdout=subprocess.DEVNULL)
-    USEDICTION = True
-except Exception:
-    USEDICTION = False
+EXE_GRAMMAR = shutil.which('diction')
+EXE_SPELL = shutil.which('aspell')
+if not EXE_SPELL:
+    raise FileNotFoundError('Aspell executable not found')
 
 
-def findtext(root: Path, globext: Sequence[str], exclude: Sequence[str],
-             checkgrammar: bool = USEDICTION):
+def findtextfiles(path: Path,
+                  globext: Sequence[str],
+                  exclude: Sequence[str],
+                  checkgrammar: bool = False):
     """finds file to spell check"""
-    if isinstance(globext, (Path, str)):
+    path = Path(path).expanduser()
+    if path.is_file():
+        spellchk(path, checkgrammar=checkgrammar)
+
+    if isinstance(globext, str):
         globext = [globext]
 
-    for e in globext:
-        # in case "ext" is actually a specific filename
-        ext = Path(e).expanduser()
-        if ext.is_file():
-            spellchk(ext, checkgrammar=checkgrammar)
-        else:  # usual case
-            spellchklist(Path(root).expanduser().rglob(str(ext)), exclude,
-                         checkgrammar)
+    for ext in globext:
+        for fn in path.rglob(ext):
+            if exclude is not None:
+                for ex in exclude:
+                    if fn.parent.name.endswith(ex):
+                        continue
+
+            spellchk(fn, checkgrammar)
 
 
-def spellchklist(flist: Union[Generator[Path, None, None], Sequence[Path]],
-                 exclude: Sequence[str],
-                 checkgrammar: bool = USEDICTION):
-    """Spell check each file"""
+def spellchk(fn: Path, checkgrammar: bool = False):
 
-    for f in flist:
-        spellchk(f, exclude, checkgrammar)
+    subprocess.run([EXE_SPELL, 'check', str(fn)])
 
-
-def spellchk(f: Path, exclude: Sequence[str] = None,
-             checkgrammar: bool = USEDICTION):
-
-    if exclude is not None:
-        for ex in exclude:
-            if f.parent.name.endswith(ex):
-                return
-
-    try:
-        subprocess.check_call(['aspell', 'check', str(f)])
-    except Exception as e:  # catch-all for unexpected error
-        print(f, e)
-
-    if checkgrammar:
-        try:
-            subprocess.check_call(['diction', str(f)])
-        except Exception as e:  # catch-all for unexpected error
-            print(f, e)
+    if checkgrammar and EXE_GRAMMAR:
+        subprocess.run([EXE_GRAMMAR, str(fn)])
 
 
 def main():
@@ -72,7 +57,7 @@ def main():
     P = p.parse_args()
 
     try:
-        findtext(P.rdir, P.glob, P.exclude, P.nogrammar)
+        findtextfiles(P.rdir, P.glob, P.exclude, P.nogrammar)
     except KeyboardInterrupt:
         pass
 

@@ -3,7 +3,7 @@ language: python
 group: travis_latest
 
 git:
-  depth: 3
+  depth: 25
   quiet: true
 
 python:
@@ -21,8 +21,5 @@ install:
 - pip install -e .[tests,cov]
 
 script:
-- if [[ $TRAVIS_PYTHON_VERSION == 3.6* ]]; then
-  flake8;
-  mypy . --ignore-missing-imports;
-  fi
-
+  - flake8
+  - mypy .

@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from argparse import ArgumentParser
 import shutil
-from typing import Union, List, Iterator
+from typing import Iterable
 
 
 def scanbadchar(path: Path, pat: str,
@@ -22,7 +22,7 @@ def scanbadchar(path: Path, pat: str,
         rewrite file with bad characters omitted, saving original to filename.bak
     """
     path = Path(path).expanduser()
-    flist: Union[Iterator[Path], List[Path]]
+    flist: Iterable[Path]
     if path.is_file():
         flist = [path]
     elif path.is_dir():
@@ -30,7 +30,7 @@ def scanbadchar(path: Path, pat: str,
             raise ValueError('must specify -e filename glob pattern when specifying a directory')
         flist = path.glob(pat)
     else:
-        raise FileNotFoundError(f'{path} not found')
+        raise FileNotFoundError(path)
 
     for fn in flist:
         if fn.is_dir():

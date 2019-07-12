@@ -5,7 +5,7 @@ Recursive spell check using "aspell"
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Sequence
+from typing import Sequence, Tuple
 from argparse import ArgumentParser
 
 MAXSIZE = 20e6  # [bytes]
@@ -13,12 +13,12 @@ MAXSIZE = 20e6  # [bytes]
 EXE_GRAMMAR = shutil.which('diction')
 EXE_SPELL = shutil.which('aspell')
 if not EXE_SPELL:
-    raise FileNotFoundError('Aspell executable not found')
+    raise ImportError('Aspell executable not found')
 
 
 def findtextfiles(path: Path,
                   globext: Sequence[str],
-                  exclude: Sequence[str],
+                  exclude: Tuple[str],
                   checkgrammar: bool = False):
     """finds file to spell check"""
     path = Path(path).expanduser()
@@ -31,9 +31,8 @@ def findtextfiles(path: Path,
     for ext in globext:
         for fn in path.rglob(ext):
             if exclude is not None:
-                for ex in exclude:
-                    if fn.parent.name.endswith(ex):
-                        continue
+                if fn.parent.name.endswith(exclude):
+                    continue
 
             spellchk(fn, checkgrammar)
 
@@ -52,12 +51,12 @@ def main():
     p.add_argument('-g', '--glob', help='glob pattern', nargs='+',
                    default=['*.rst', '*.txt', '*.md', '*.tex'])
     p.add_argument('--exclude', help='directories to exclude', nargs='+',
-                   default=['.egg-info'])
+                   default=('.egg-info'))
     p.add_argument('--nogrammar', action='store_false')
     P = p.parse_args()
 
     try:
-        findtextfiles(P.rdir, P.glob, P.exclude, P.nogrammar)
+        findtextfiles(P.rdir, P.glob, tuple(P.exclude), P.nogrammar)
     except KeyboardInterrupt:
         pass
 

@@ -1,4 +1,3 @@
-# this also works great on osx, but I disabled osx to conserve Travis-CI resources.
 language: python
 group: travis_latest
 
@@ -6,16 +5,9 @@ git:
   depth: 25
   quiet: true
 
-python:
-- 3.6
 
 os:
 - linux
-
-addons:
-  apt:
-    packages:
-    - aspell
 
 install:
 - pip install -e .[tests,cov]

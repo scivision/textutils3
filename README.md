@@ -1,13 +1,11 @@
+# Recursive Spellcheck in Python
+
 [![Build Status](https://travis-ci.com/scivision/textutils3.svg?branch=master)](https://travis-ci.com/scivision/textutils3)
 [![PyPi version](https://img.shields.io/pypi/pyversions/textutils3.svg)](https://pypi.python.org/pypi/textutils3)
 [![PyPi Download stats](http://pepy.tech/badge/textutils3)](http://pepy.tech/project/textutils3)
 
-
-# Recursive Spellcheck in Python
-
 Recursively spellcheck files using aspell or other backend.
 Optional grammar highlighting via `diction` is also provided.
-
 
 ## Install
 
@@ -28,6 +26,7 @@ Optional grammar highlighting via `diction` is also provided.
    ```
 
 for help:
+
 ```sh
 spellcheck -h
 ```

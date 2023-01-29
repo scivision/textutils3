@@ -1,5 +1,28 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "textutils3"
+version = "1.1.0"
+description = "Recursively check spelling and grammer and other tasks with text documents."
+keywords = ["spellcheck"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Utilities"
+]
+dynamic = ["readme"]
+requires-python = ">=3.9"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
 
 [tool.black]
-line-length = 132
+line-length = 100
+
+[tool.mypy]
+files = ["."]
